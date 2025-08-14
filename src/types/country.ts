@@ -233,8 +233,8 @@ export const CountryTypeGuards = {
     return typeof code === 'string' && code.length === 2 && /^[A-Z]{2}$/.test(code);
   },
   
-  isValidNumericCode: (code: string): code is NumericCountryCode => {
-    return typeof code === 'string' && code.length === 3 && /^\d{3}$/.test(code) && code !== undefined;
+  isValidNumericCode: (code: string): code is string => {
+    return typeof code === 'string' && code.length === 3 && /^\d{3}$/.test(code);
   },
   
   isBaseCountry: (obj: unknown): obj is BaseCountry => {
