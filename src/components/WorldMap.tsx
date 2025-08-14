@@ -46,7 +46,7 @@ export default function WorldMap({ selectedRegions, hoveredCountry, onCountryHov
   
   
   // Zoom and pan state
-  const [position, setPosition] = useState({ coordinates: [0, 0], zoom: 1 });
+  const [position, setPosition] = useState<{ coordinates: [number, number]; zoom: number }>({ coordinates: [0, 0], zoom: 1 });
   
   // Store loaded geographies for search functionality
   const [loadedGeographies, setLoadedGeographies] = useState<GeographyData[]>([]);
@@ -483,7 +483,7 @@ export default function WorldMap({ selectedRegions, hoveredCountry, onCountryHov
         
         <ZoomableGroup
           zoom={position.zoom}
-          center={position.coordinates}
+          center={position.coordinates as [number, number]}
           onMoveEnd={handleMoveEnd}
           onDoubleClick={(event) => {
             // Only zoom in normally if double-click is on ocean (not on a country)
