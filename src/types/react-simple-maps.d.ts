@@ -17,7 +17,7 @@ declare module 'react-simple-maps' {
 
   export interface GeographiesProps {
     geography: string;
-    children: (geographies: any[]) => ReactNode;
+    children: (props: { geographies: any[] }) => ReactNode;
   }
 
   export interface GeographyProps {
