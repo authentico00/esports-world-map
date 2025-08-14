@@ -1,96 +1,280 @@
 import { EsportsRegion } from '@/types/esports';
-import { getValveCountryRegion } from './valveRegions';
 
-// Build static mapping from known countries using Valve data
-// This provides immediate access and fallbacks
-const buildStaticMapping = async (): Promise<Record<string, EsportsRegion>> => {
-  const knownCountries = [
-    'us', 'ca', 'mx', 'br', 'ar', 'cl', 'pe', 'co', 'uy', 've', 'ec', 'bo', 'py',
-    'de', 'gb', 'fr', 'se', 'dk', 'no', 'fi', 'nl', 'be', 'ch', 'at', 'it', 'es', 
-    'pl', 'cz', 'ua', 'ru', 'tr', 'kz', 'kr', 'jp', 'cn', 'in', 'th', 'vn', 'ph', 'id', 
-    'my', 'sg', 'au', 'nz', 'fj', 'pg', 'za', 'eg', 'il', 'ae', 'sa', 'qa', 'dz', 'ma',
-    'tn', 'ly', 'am', 'az', 'bh', 'cy', 'ge', 'iq', 'jo', 'kw', 'lb', 'om', 'ps', 'sy', 'ye'
-  ];
-  
-  const mapping: Record<string, EsportsRegion> = {};
-  
-  // Use Promise.allSettled to handle any individual failures gracefully
-  const results = await Promise.allSettled(
-    knownCountries.map(async (countryCode) => {
-      const region = await getValveCountryRegion(countryCode);
-      return { countryCode: countryCode.toUpperCase(), region };
-    })
-  );
-  
-  // Process results
-  results.forEach((result, index) => {
-    if (result.status === 'fulfilled') {
-      mapping[result.value.countryCode] = result.value.region;
-    } else {
-      // Fallback for failed countries
-      const countryCode = knownCountries[index].toUpperCase();
-      mapping[countryCode] = EsportsRegion.EUROPE;
-    }
-  });
-  
-  return mapping;
+// Static country regions mapping based on Valve's Regional Standings (VRS)
+// Data sourced from https://github.com/ValveSoftware/counter-strike_regional_standings
+const staticCountryRegions: Record<string, EsportsRegion> = {
+  // North America
+  'US': EsportsRegion.NORTH_AMERICA,
+  'CA': EsportsRegion.NORTH_AMERICA,
+  'MX': EsportsRegion.NORTH_AMERICA,
+  'AI': EsportsRegion.NORTH_AMERICA,
+  'AG': EsportsRegion.NORTH_AMERICA,
+  'AW': EsportsRegion.NORTH_AMERICA,
+  'BS': EsportsRegion.NORTH_AMERICA,
+  'BB': EsportsRegion.NORTH_AMERICA,
+  'BZ': EsportsRegion.NORTH_AMERICA,
+  'BM': EsportsRegion.NORTH_AMERICA,
+  'BQ': EsportsRegion.NORTH_AMERICA,
+  'CR': EsportsRegion.NORTH_AMERICA,
+  'CU': EsportsRegion.NORTH_AMERICA,
+  'CW': EsportsRegion.NORTH_AMERICA,
+  'DM': EsportsRegion.NORTH_AMERICA,
+  'DO': EsportsRegion.NORTH_AMERICA,
+  'SV': EsportsRegion.NORTH_AMERICA,
+  'GL': EsportsRegion.NORTH_AMERICA,
+  'GD': EsportsRegion.NORTH_AMERICA,
+  'GP': EsportsRegion.NORTH_AMERICA,
+  'GT': EsportsRegion.NORTH_AMERICA,
+  'HT': EsportsRegion.NORTH_AMERICA,
+  'HN': EsportsRegion.NORTH_AMERICA,
+  'JM': EsportsRegion.NORTH_AMERICA,
+  'MQ': EsportsRegion.NORTH_AMERICA,
+  'MS': EsportsRegion.NORTH_AMERICA,
+  'NI': EsportsRegion.NORTH_AMERICA,
+  'PA': EsportsRegion.NORTH_AMERICA,
+  'PR': EsportsRegion.NORTH_AMERICA,
+  'BL': EsportsRegion.NORTH_AMERICA,
+  'KN': EsportsRegion.NORTH_AMERICA,
+  'LC': EsportsRegion.NORTH_AMERICA,
+  'MF': EsportsRegion.NORTH_AMERICA,
+  'PM': EsportsRegion.NORTH_AMERICA,
+  'VC': EsportsRegion.NORTH_AMERICA,
+  'SX': EsportsRegion.NORTH_AMERICA,
+  'TT': EsportsRegion.NORTH_AMERICA,
+  'TC': EsportsRegion.NORTH_AMERICA,
+  'VG': EsportsRegion.NORTH_AMERICA,
+  'VI': EsportsRegion.NORTH_AMERICA,
+
+  // South America
+  'AR': EsportsRegion.SOUTH_AMERICA,
+  'BO': EsportsRegion.SOUTH_AMERICA,
+  'BR': EsportsRegion.SOUTH_AMERICA,
+  'CL': EsportsRegion.SOUTH_AMERICA,
+  'CO': EsportsRegion.SOUTH_AMERICA,
+  'EC': EsportsRegion.SOUTH_AMERICA,
+  'FK': EsportsRegion.SOUTH_AMERICA,
+  'GF': EsportsRegion.SOUTH_AMERICA,
+  'GY': EsportsRegion.SOUTH_AMERICA,
+  'PY': EsportsRegion.SOUTH_AMERICA,
+  'PE': EsportsRegion.SOUTH_AMERICA,
+  'SR': EsportsRegion.SOUTH_AMERICA,
+  'UY': EsportsRegion.SOUTH_AMERICA,
+  'VE': EsportsRegion.SOUTH_AMERICA,
+
+  // Europe
+  'AX': EsportsRegion.EUROPE,
+  'AL': EsportsRegion.EUROPE,
+  'AD': EsportsRegion.EUROPE,
+  'AT': EsportsRegion.EUROPE,
+  'BY': EsportsRegion.EUROPE,
+  'BE': EsportsRegion.EUROPE,
+  'BA': EsportsRegion.EUROPE,
+  'BG': EsportsRegion.EUROPE,
+  'HR': EsportsRegion.EUROPE,
+  'CZ': EsportsRegion.EUROPE,
+  'DK': EsportsRegion.EUROPE,
+  'EE': EsportsRegion.EUROPE,
+  'FO': EsportsRegion.EUROPE,
+  'FI': EsportsRegion.EUROPE,
+  'FR': EsportsRegion.EUROPE,
+  'DE': EsportsRegion.EUROPE,
+  'GI': EsportsRegion.EUROPE,
+  'GR': EsportsRegion.EUROPE,
+  'GG': EsportsRegion.EUROPE,
+  'VA': EsportsRegion.EUROPE,
+  'HU': EsportsRegion.EUROPE,
+  'IS': EsportsRegion.EUROPE,
+  'IE': EsportsRegion.EUROPE,
+  'IM': EsportsRegion.EUROPE,
+  'IT': EsportsRegion.EUROPE,
+  'JE': EsportsRegion.EUROPE,
+  'LV': EsportsRegion.EUROPE,
+  'LI': EsportsRegion.EUROPE,
+  'LT': EsportsRegion.EUROPE,
+  'LU': EsportsRegion.EUROPE,
+  'MK': EsportsRegion.EUROPE,
+  'MT': EsportsRegion.EUROPE,
+  'MD': EsportsRegion.EUROPE,
+  'MC': EsportsRegion.EUROPE,
+  'ME': EsportsRegion.EUROPE,
+  'NL': EsportsRegion.EUROPE,
+  'NO': EsportsRegion.EUROPE,
+  'PL': EsportsRegion.EUROPE,
+  'PT': EsportsRegion.EUROPE,
+  'RO': EsportsRegion.EUROPE,
+  'RU': EsportsRegion.EUROPE,
+  'SM': EsportsRegion.EUROPE,
+  'RS': EsportsRegion.EUROPE,
+  'SK': EsportsRegion.EUROPE,
+  'SI': EsportsRegion.EUROPE,
+  'ES': EsportsRegion.EUROPE,
+  'SJ': EsportsRegion.EUROPE,
+  'SE': EsportsRegion.EUROPE,
+  'CH': EsportsRegion.EUROPE,
+  'TR': EsportsRegion.EUROPE,
+  'UA': EsportsRegion.EUROPE,
+  'GB': EsportsRegion.EUROPE,
+  'XK': EsportsRegion.EUROPE, // Kosovo
+
+  // Kazakhstan (officially Europe in Valve's system)
+  'KZ': EsportsRegion.EUROPE,
+
+  // Asia
+  'AF': EsportsRegion.ASIA,
+  'BD': EsportsRegion.ASIA,
+  'BT': EsportsRegion.ASIA,
+  'IO': EsportsRegion.ASIA,
+  'BN': EsportsRegion.ASIA,
+  'KH': EsportsRegion.ASIA,
+  'CN': EsportsRegion.ASIA,
+  'CX': EsportsRegion.ASIA,
+  'CC': EsportsRegion.ASIA,
+  'HK': EsportsRegion.ASIA,
+  'IN': EsportsRegion.ASIA,
+  'ID': EsportsRegion.ASIA,
+  'IR': EsportsRegion.ASIA,
+  'JP': EsportsRegion.ASIA,
+  'KP': EsportsRegion.ASIA,
+  'KR': EsportsRegion.ASIA,
+  'KG': EsportsRegion.ASIA,
+  'LA': EsportsRegion.ASIA,
+  'MO': EsportsRegion.ASIA,
+  'MY': EsportsRegion.ASIA,
+  'MV': EsportsRegion.ASIA,
+  'MN': EsportsRegion.ASIA,
+  'MM': EsportsRegion.ASIA,
+  'NP': EsportsRegion.ASIA,
+  'PK': EsportsRegion.ASIA,
+  'PH': EsportsRegion.ASIA,
+  'SG': EsportsRegion.ASIA,
+  'LK': EsportsRegion.ASIA,
+  'TW': EsportsRegion.ASIA,
+  'TJ': EsportsRegion.ASIA,
+  'TH': EsportsRegion.ASIA,
+  'TL': EsportsRegion.ASIA,
+  'TM': EsportsRegion.ASIA,
+  'UZ': EsportsRegion.ASIA,
+  'VN': EsportsRegion.ASIA,
+
+  // MENA (Middle East & North Africa)
+  'DZ': EsportsRegion.MENA,
+  'AM': EsportsRegion.MENA,
+  'AZ': EsportsRegion.MENA,
+  'BH': EsportsRegion.MENA,
+  'CY': EsportsRegion.MENA,
+  'EG': EsportsRegion.MENA,
+  'GE': EsportsRegion.MENA,
+  'IQ': EsportsRegion.MENA,
+  'IL': EsportsRegion.MENA,
+  'JO': EsportsRegion.MENA,
+  'KW': EsportsRegion.MENA,
+  'LB': EsportsRegion.MENA,
+  'LY': EsportsRegion.MENA,
+  'MA': EsportsRegion.MENA,
+  'OM': EsportsRegion.MENA,
+  'PS': EsportsRegion.MENA,
+  'QA': EsportsRegion.MENA,
+  'SA': EsportsRegion.MENA,
+  'SY': EsportsRegion.MENA,
+  'TN': EsportsRegion.MENA,
+  'AE': EsportsRegion.MENA,
+  'YE': EsportsRegion.MENA,
+
+  // Africa (Non-MENA)
+  'AO': EsportsRegion.AFRICA_NON_MENA,
+  'BJ': EsportsRegion.AFRICA_NON_MENA,
+  'BW': EsportsRegion.AFRICA_NON_MENA,
+  'BF': EsportsRegion.AFRICA_NON_MENA,
+  'BI': EsportsRegion.AFRICA_NON_MENA,
+  'CM': EsportsRegion.AFRICA_NON_MENA,
+  'CV': EsportsRegion.AFRICA_NON_MENA,
+  'CF': EsportsRegion.AFRICA_NON_MENA,
+  'TD': EsportsRegion.AFRICA_NON_MENA,
+  'KM': EsportsRegion.AFRICA_NON_MENA,
+  'CG': EsportsRegion.AFRICA_NON_MENA,
+  'CD': EsportsRegion.AFRICA_NON_MENA,
+  'CI': EsportsRegion.AFRICA_NON_MENA,
+  'DJ': EsportsRegion.AFRICA_NON_MENA,
+  'GQ': EsportsRegion.AFRICA_NON_MENA,
+  'ER': EsportsRegion.AFRICA_NON_MENA,
+  'ET': EsportsRegion.AFRICA_NON_MENA,
+  'GA': EsportsRegion.AFRICA_NON_MENA,
+  'GM': EsportsRegion.AFRICA_NON_MENA,
+  'GH': EsportsRegion.AFRICA_NON_MENA,
+  'GN': EsportsRegion.AFRICA_NON_MENA,
+  'GW': EsportsRegion.AFRICA_NON_MENA,
+  'KE': EsportsRegion.AFRICA_NON_MENA,
+  'LS': EsportsRegion.AFRICA_NON_MENA,
+  'LR': EsportsRegion.AFRICA_NON_MENA,
+  'MG': EsportsRegion.AFRICA_NON_MENA,
+  'MW': EsportsRegion.AFRICA_NON_MENA,
+  'ML': EsportsRegion.AFRICA_NON_MENA,
+  'MR': EsportsRegion.AFRICA_NON_MENA,
+  'MU': EsportsRegion.AFRICA_NON_MENA,
+  'YT': EsportsRegion.AFRICA_NON_MENA,
+  'MZ': EsportsRegion.AFRICA_NON_MENA,
+  'NA': EsportsRegion.AFRICA_NON_MENA,
+  'NE': EsportsRegion.AFRICA_NON_MENA,
+  'NG': EsportsRegion.AFRICA_NON_MENA,
+  'RE': EsportsRegion.AFRICA_NON_MENA,
+  'RW': EsportsRegion.AFRICA_NON_MENA,
+  'SH': EsportsRegion.AFRICA_NON_MENA,
+  'ST': EsportsRegion.AFRICA_NON_MENA,
+  'SN': EsportsRegion.AFRICA_NON_MENA,
+  'SC': EsportsRegion.AFRICA_NON_MENA,
+  'SL': EsportsRegion.AFRICA_NON_MENA,
+  'SO': EsportsRegion.AFRICA_NON_MENA,
+  'ZA': EsportsRegion.AFRICA_NON_MENA,
+  'SS': EsportsRegion.AFRICA_NON_MENA,
+  'SD': EsportsRegion.AFRICA_NON_MENA,
+  'SZ': EsportsRegion.AFRICA_NON_MENA,
+  'TZ': EsportsRegion.AFRICA_NON_MENA,
+  'TG': EsportsRegion.AFRICA_NON_MENA,
+  'UG': EsportsRegion.AFRICA_NON_MENA,
+  'EH': EsportsRegion.AFRICA_NON_MENA,
+  'ZM': EsportsRegion.AFRICA_NON_MENA,
+  'ZW': EsportsRegion.AFRICA_NON_MENA,
+
+  // Oceania
+  'AS': EsportsRegion.OCEANIA,
+  'AU': EsportsRegion.OCEANIA,
+  'CK': EsportsRegion.OCEANIA,
+  'FJ': EsportsRegion.OCEANIA,
+  'PF': EsportsRegion.OCEANIA,
+  'GU': EsportsRegion.OCEANIA,
+  'KI': EsportsRegion.OCEANIA,
+  'MH': EsportsRegion.OCEANIA,
+  'FM': EsportsRegion.OCEANIA,
+  'NR': EsportsRegion.OCEANIA,
+  'NC': EsportsRegion.OCEANIA,
+  'NZ': EsportsRegion.OCEANIA,
+  'NU': EsportsRegion.OCEANIA,
+  'NF': EsportsRegion.OCEANIA,
+  'MP': EsportsRegion.OCEANIA,
+  'PW': EsportsRegion.OCEANIA,
+  'PG': EsportsRegion.OCEANIA,
+  'PN': EsportsRegion.OCEANIA,
+  'WS': EsportsRegion.OCEANIA,
+  'SB': EsportsRegion.OCEANIA,
+  'TK': EsportsRegion.OCEANIA,
+  'TO': EsportsRegion.OCEANIA,
+  'TV': EsportsRegion.OCEANIA,
+  'UM': EsportsRegion.OCEANIA,
+  'VU': EsportsRegion.OCEANIA,
+  'WF': EsportsRegion.OCEANIA,
+
+  // Antarctica
+  'AQ': EsportsRegion.ANTARCTICA,
+  'BV': EsportsRegion.ANTARCTICA,
+  'TF': EsportsRegion.ANTARCTICA,
+  'HM': EsportsRegion.ANTARCTICA,
+  'GS': EsportsRegion.ANTARCTICA,
 };
-
-// Initialize the mapping
-let staticCountryRegions: Record<string, EsportsRegion> = {};
-let isInitialized = false;
-
-// Initialize mapping on module load
-buildStaticMapping()
-  .then(mapping => {
-    staticCountryRegions = mapping;
-    isInitialized = true;
-  })
-  .catch(error => {
-    console.error('Failed to build country regions mapping:', error);
-    // Fallback mapping for core countries
-    staticCountryRegions = {
-      'US': EsportsRegion.NORTH_AMERICA,
-      'CA': EsportsRegion.NORTH_AMERICA,
-      'MX': EsportsRegion.NORTH_AMERICA,
-      'BR': EsportsRegion.SOUTH_AMERICA,
-      'AR': EsportsRegion.SOUTH_AMERICA,
-      'CL': EsportsRegion.SOUTH_AMERICA,
-      'DE': EsportsRegion.EUROPE,
-      'GB': EsportsRegion.EUROPE,
-      'FR': EsportsRegion.EUROPE,
-      'SE': EsportsRegion.EUROPE,
-      'DK': EsportsRegion.EUROPE,
-      'KR': EsportsRegion.ASIA,
-      'JP': EsportsRegion.ASIA,
-      'CN': EsportsRegion.ASIA,
-      'AU': EsportsRegion.OCEANIA,
-      'NZ': EsportsRegion.OCEANIA,
-      'ZA': EsportsRegion.AFRICA_NON_MENA,
-      'EG': EsportsRegion.MENA,
-      'SA': EsportsRegion.MENA,
-    };
-    isInitialized = true;
-  });
 
 // Async function to get country region (preferred for new lookups)
 export async function getCountryRegion(countryCode: string): Promise<EsportsRegion> {
   const upperCountryCode = countryCode.toUpperCase();
-  
-  // Check cache first
-  if (staticCountryRegions[upperCountryCode]) {
-    return staticCountryRegions[upperCountryCode];
-  }
-  
-  // Try to get from Valve data directly
-  try {
-    const region = await getValveCountryRegion(countryCode);
-    staticCountryRegions[upperCountryCode] = region; // Cache result
-    return region;
-  } catch (error) {
-    console.warn(`Failed to get region for ${countryCode}, using fallback`);
-    return EsportsRegion.EUROPE; // Fallback
-  }
+  return staticCountryRegions[upperCountryCode] || EsportsRegion.EUROPE;
 }
 
 // Synchronous version for immediate access
@@ -100,17 +284,7 @@ export function getCountryRegionSync(countryCode: string): EsportsRegion {
 }
 
 // Export the static mapping for existing code compatibility
-export const COUNTRY_REGIONS: Record<string, EsportsRegion> = new Proxy({}, {
-  get(_, prop: string) {
-    return staticCountryRegions[prop] || EsportsRegion.EUROPE;
-  },
-  has(_, prop: string) {
-    return prop in staticCountryRegions || true; // Always return true for compatibility
-  },
-  ownKeys(_) {
-    return Object.keys(staticCountryRegions);
-  }
-});
+export const COUNTRY_REGIONS: Record<string, EsportsRegion> = staticCountryRegions;
 
 export const SAMPLE_TOURNAMENTS = [
   {
