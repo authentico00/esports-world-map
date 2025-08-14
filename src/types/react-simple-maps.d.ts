@@ -25,6 +25,7 @@ declare module 'react-simple-maps' {
     onMouseEnter?: (event: React.MouseEvent) => void;
     onMouseLeave?: (event: React.MouseEvent) => void;
     onClick?: (event: React.MouseEvent) => void;
+    onDoubleClick?: (event: React.MouseEvent) => void;
     style?: {
       default?: React.CSSProperties;
       hover?: React.CSSProperties;
@@ -33,6 +34,7 @@ declare module 'react-simple-maps' {
     fill?: string;
     stroke?: string;
     strokeWidth?: number;
+    opacity?: number;
     className?: string;
   }
 
