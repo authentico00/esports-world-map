@@ -61,7 +61,7 @@ export class ErrorReportingService {
       errorId,
       message: error.message,
       stack: error.stack,
-      componentStack: errorInfo.componentStack,
+      componentStack: errorInfo.componentStack || undefined,
       level,
       component,
       timestamp: new Date().toISOString(),
