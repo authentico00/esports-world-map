@@ -479,23 +479,13 @@ export default function WorldMap({ selectedRegions, hoveredCountry, onCountryHov
           width="100%" 
           height="100%" 
           fill="url(#oceanDots)"
+          onDoubleClick={handleZoomIn}
         />
         
         <ZoomableGroup
           zoom={position.zoom}
           center={position.coordinates as [number, number]}
           onMoveEnd={handleMoveEnd}
-          onDoubleClick={(event) => {
-            // Only zoom in normally if double-click is on ocean (not on a country)
-            const target = event.target as SVGElement;
-            // Check if the click was on the ocean background (rect with oceanDots pattern)
-            if (target.tagName === 'rect' && (
-              target.getAttribute('fill')?.includes('oceanDots') || 
-              target.getAttribute('fill') === 'url(#oceanDots)'
-            )) {
-              handleZoomIn();
-            }
-          }}
         >
           <Geographies geography={geoUrl}>
             {({ geographies }) => {

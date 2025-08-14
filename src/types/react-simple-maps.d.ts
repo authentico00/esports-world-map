@@ -39,7 +39,7 @@ declare module 'react-simple-maps' {
   export interface ZoomableGroupProps {
     zoom?: number;
     center?: [number, number];
-    onMoveEnd?: (center: [number, number], zoom: number) => void;
+    onMoveEnd?: (position: { coordinates: [number, number]; zoom: number }) => void;
     minZoom?: number;
     maxZoom?: number;
     className?: string;
