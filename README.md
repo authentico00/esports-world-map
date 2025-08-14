@@ -1,6 +1,6 @@
 # Esports World Map
 
-An interactive esports world map visualization for Valve's VRS regional assignment for the Counter-Strike 2 professional circuit, TypeScript, and Tailwind CSS.
+An interactive esports world map visualization for Valve's VRS regional assignments for the Counter-Strike 2 professional circuit, built with Next.js, TypeScript, and Tailwind CSS.
 
 ## Features
 
